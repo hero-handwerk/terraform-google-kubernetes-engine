@@ -961,14 +961,18 @@ resource "google_container_node_pool" "pools" {
     dynamic "kubelet_config" {
       for_each = length(setintersection(
         keys(each.value),
-        ["cpu_manager_policy", "cpu_cfs_quota", "cpu_cfs_quota_period", "insecure_kubelet_readonly_port_enabled", "pod_pids_limit", "container_log_max_size", "container_log_max_files", "image_gc_low_threshold_percent", "image_gc_high_threshold_percent", "image_minimum_gc_age", "image_maximum_gc_age", "allowed_unsafe_sysctls"]
+        ["cpu_manager_policy", "cpu_cfs_quota", "cpu_cfs_quota_period", "insecure_kubelet_readonly_port_enabled", "pod_pids_limit", "container_log_max_size", "container_log_max_files", "image_gc_low_threshold_percent", "image_gc_high_threshold_percent", "image_minimum_gc_age", "image_maximum_gc_age", "allowed_unsafe_sysctls", "single_process_oom_kill"]
       )) != 0 ? [1] : []
 
       content {
-        cpu_manager_policy                     = lookup(each.value, "cpu_manager_policy", "static")
+        # Fork deviation: default null instead of "static" so a pool that only
+        # sets single_process_oom_kill does not get a CPU manager change
+        # injected as a side effect.
+        cpu_manager_policy                     = lookup(each.value, "cpu_manager_policy", null)
         cpu_cfs_quota                          = lookup(each.value, "cpu_cfs_quota", null)
         cpu_cfs_quota_period                   = lookup(each.value, "cpu_cfs_quota_period", null)
         insecure_kubelet_readonly_port_enabled = lookup(each.value, "insecure_kubelet_readonly_port_enabled", null) != null ? upper(tostring(each.value.insecure_kubelet_readonly_port_enabled)) : null
+        single_process_oom_kill                = lookup(each.value, "single_process_oom_kill", null)
         pod_pids_limit                         = lookup(each.value, "pod_pids_limit", null)
         container_log_max_size                 = lookup(each.value, "container_log_max_size", null)
         container_log_max_files                = lookup(each.value, "container_log_max_files", null)
@@ -1327,14 +1331,18 @@ resource "google_container_node_pool" "windows_pools" {
     dynamic "kubelet_config" {
       for_each = length(setintersection(
         keys(each.value),
-        ["cpu_manager_policy", "cpu_cfs_quota", "cpu_cfs_quota_period", "insecure_kubelet_readonly_port_enabled", "pod_pids_limit", "container_log_max_size", "container_log_max_files", "image_gc_low_threshold_percent", "image_gc_high_threshold_percent", "image_minimum_gc_age", "image_maximum_gc_age", "allowed_unsafe_sysctls"]
+        ["cpu_manager_policy", "cpu_cfs_quota", "cpu_cfs_quota_period", "insecure_kubelet_readonly_port_enabled", "pod_pids_limit", "container_log_max_size", "container_log_max_files", "image_gc_low_threshold_percent", "image_gc_high_threshold_percent", "image_minimum_gc_age", "image_maximum_gc_age", "allowed_unsafe_sysctls", "single_process_oom_kill"]
       )) != 0 ? [1] : []
 
       content {
-        cpu_manager_policy                     = lookup(each.value, "cpu_manager_policy", "static")
+        # Fork deviation: default null instead of "static" so a pool that only
+        # sets single_process_oom_kill does not get a CPU manager change
+        # injected as a side effect.
+        cpu_manager_policy                     = lookup(each.value, "cpu_manager_policy", null)
         cpu_cfs_quota                          = lookup(each.value, "cpu_cfs_quota", null)
         cpu_cfs_quota_period                   = lookup(each.value, "cpu_cfs_quota_period", null)
         insecure_kubelet_readonly_port_enabled = lookup(each.value, "insecure_kubelet_readonly_port_enabled", null) != null ? upper(tostring(each.value.insecure_kubelet_readonly_port_enabled)) : null
+        single_process_oom_kill                = lookup(each.value, "single_process_oom_kill", null)
         pod_pids_limit                         = lookup(each.value, "pod_pids_limit", null)
         container_log_max_size                 = lookup(each.value, "container_log_max_size", null)
         container_log_max_files                = lookup(each.value, "container_log_max_files", null)
